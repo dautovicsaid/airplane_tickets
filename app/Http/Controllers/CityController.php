@@ -76,7 +76,7 @@ class CityController extends Controller
         if (!$city) {
             return response()->json([
                 'success' => false,
-                'message' => 'Sorry, country not found.',
+                'message' => 'Sorry, city not found.',
             ], 403);
         }
 

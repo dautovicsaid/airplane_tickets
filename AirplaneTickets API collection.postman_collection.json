@@ -282,6 +282,14 @@
 					"response": []
 				},
 				{
+					"name": "Get airports by city",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
 					"name": "Store",
 					"request": {
 						"method": "POST",
@@ -340,14 +348,6 @@
 								"4"
 							]
 						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get airports by city",
-					"request": {
-						"method": "GET",
-						"header": []
 					},
 					"response": []
 				}
@@ -434,8 +434,21 @@
 				{
 					"name": "Delete",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/api/airplanes/4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"airplanes",
+								"4"
+							]
+						}
 					},
 					"response": []
 				}
@@ -640,6 +653,14 @@
 					"response": []
 				},
 				{
+					"name": "Get by id",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
 					"name": "Edit",
 					"request": {
 						"method": "PUT",
@@ -666,14 +687,6 @@
 								"1"
 							]
 						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get by id",
-					"request": {
-						"method": "GET",
-						"header": []
 					},
 					"response": []
 				}
