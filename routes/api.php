@@ -66,7 +66,7 @@ Route::group(['middleware' => 'api'], function ($router) {
 
             // Airport routes
 
-            Route::get('airports', [AirportController::class, 'index']);
+
             Route::post('airports', [AirportController::class, 'store']);
             Route::get('airports/{airport}', [AirportController::class, 'get']);
             Route::put('airports/{airport}', [AirportController::class, 'update']);
@@ -88,6 +88,7 @@ Route::group(['middleware' => 'api'], function ($router) {
 
         //Non-admin routes
 
+        Route::get('airports', [AirportController::class, 'index']);
         Route::get('countries/{country}/cities',[CountryController::class,'getCitiesByCountry']);
         Route::get('cities/{city}/airports', [CityController::class, 'getAirportsByCity']);
         Route::get('flights', [FlightController::class, 'filterFlights']);
