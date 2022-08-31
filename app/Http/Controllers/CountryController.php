@@ -12,18 +12,11 @@ class CountryController extends Controller
 
     public function index()
     {
-        if (!auth()->user()->is_admin) {
-            return response()->json(['error' => 'Forbidden'], 403);
-        }
-
         return Country::all();
     }
 
     public function store(Request $request)
     {
-        if (!auth()->user()->is_admin) {
-            return response()->json(['error' => 'Forbidden'], 403);
-        }
 
         $data = $request->only('name');
         $validator = Validator::make($data, [
@@ -41,9 +34,6 @@ class CountryController extends Controller
 
     public function get($id)
     {
-        if (!auth()->user()->is_admin) {
-            return response()->json(['error' => 'Forbidden'], 403);
-        }
 
         $country = Country::query()->find($id);
         if(!$country) {
