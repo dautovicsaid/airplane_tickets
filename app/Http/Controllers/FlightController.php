@@ -2,113 +2,81 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GetFilteredFlightRequest;
+use App\Http\Requests\StoreFlightRequest;
+use App\Http\Requests\UpdateFlightRequest;
+use App\Http\Resources\FlightResource;
+use App\Http\Services\FlightService;
 use App\Models\Flight;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class FlightController extends Controller
 {
+    protected FlightService $flightService;
 
-
-    public function flightHistory() {
-
-        return Flight::with('departmentAirport', 'arrivalAirport', 'airplane')->get();
-
+    public function __construct(FlightService $flightService)
+    {
+        $this->flightService = $flightService;
     }
 
-    public function filterFlights(Request $request)
+    /**
+     * @return AnonymousResourceCollection
+     * @throws AuthorizationException
+     */
+    public function flightHistory(): AnonymousResourceCollection
     {
-        $data = $request->only('department_airport','arrival_airport','airplane_id','boarding_time', 'check_in_time', 'date_from', 'date_to', 'price');
-        $validator = Validator::make($data, [
-            'department_airport' => 'required|exists:airports,id',
-            'arrival_airport' => 'required|exists:airports,id|different:department_airport',
-            'date_from' => 'required|date|after:today',
-            'date_to' => 'required|date|afterorequal:date_from'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->getMessageBag()], 200);
-        }
-
-        $flights = Flight::with('departmentAirport', 'arrivalAirport', 'airplane')
-            ->where('department_airport',$data['department_airport'])
-            ->where('arrival_airport',$data['arrival_airport'])
-            ->whereBetween('date_from',[$data['date_from'],$data['date_to']])
-            ->whereBetween('date_to',[$data['date_from'],$data['date_to']])
-            ->get();
-
-        return $flights;
-        // Kako pristupiti $data podacima da bi ih dobio u where-u
-
-
+        $this->authorize('viewAny', Flight::class);
+        return $this->flightService->flightHistory();
     }
 
-    public function store(Request $request)
+    /**
+     * @param GetFilteredFlightRequest $request
+     * @return AnonymousResourceCollection
+     */
+    public function filterFlights(GetFilteredFlightRequest $request): AnonymousResourceCollection
     {
-        $data = $request->only('department_airport','arrival_airport','airplane_id','boarding_time', 'check_in_time', 'date_from', 'date_to', 'price');
-        $validator = Validator::make($data, [
-            'department_airport' => 'required|exists:airports,id',
-            'arrival_airport' => 'required|exists:airports,id|different:department_airport',
-            'airplane_id' => 'required|exists:airplanes,id',
-            'date_from' => 'required|date|after:today',
-            'date_to' => 'required|date|after:date_from',
-            'check_in_time' => 'required|date|after:today',
-            'boarding_time' =>'required|date|after:check_in_time',
-            'price' => 'required|numeric',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->getMessageBag()], 200);
-        }
-
-        $flight = Flight::create($data);
-
-        return $flight;
+        return $this->flightService->filterFlights($request);
     }
 
-
-
-    public function get($id)
+    /**
+     * @param StoreFlightRequest $request
+     * @return FlightResource
+     */
+    public function store(StoreFlightRequest $request): FlightResource
     {
-        $flight = Flight::with('departmentAirport', 'arrivalAirport', 'airplane')->get()->find($id);
-        if(!$flight) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Sorry, flight not found.',
-            ], 403);
-        }
-
-        return $flight;
+        return $this->flightService->store($request);
     }
 
-    public function update(Request $request, Flight $flight)
+    /**
+     * @param Flight $flight
+     * @return FlightResource
+     */
+    public function show(Flight $flight): FlightResource
     {
-        $data = $request->only('department_airport','arrival_airport','airplane_id','boarding_time', 'check_in_time', 'date_from', 'date_to', 'price');
-        $validator = Validator::make($data, [
-            'department_airport' => 'required|exists:airports,id',
-            'arrival_airport' => 'required|exists:airports,id|different:department_airport',
-            'airplane_id' => 'required|exists:airplanes,id',
-            'date_from' => 'required|date|after:today',
-            'date_to' => 'required|date|after:date_from',
-            'check_in_time' => 'required|date|after:today',
-            'boarding_time' =>'required|date|after:check_in_time',
-            'price' => 'required|numeric',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->getMessageBag()], 200);
-        }
-
-        $flight->update($data);
-
-        return $flight;
+        return $this->flightService->show($flight);
     }
 
-
-    public function destroy(Flight $flight)
+    /**
+     * @param UpdateFlightRequest $request
+     * @param Flight $flight
+     * @return FlightResource
+     */
+    public function update(UpdateFlightRequest $request, Flight $flight): FlightResource
     {
-        $flight->delete();
+        return $this->flightService->update($request, $flight);
+    }
+
+    /**
+     * @param Flight $flight
+     * @return Response
+     * @throws AuthorizationException
+     */
+    public function destroy(Flight $flight): Response
+    {
+        $this->authorize('delete', Flight::class);
+        $this->flightService->destroy($flight);
 
         return response()->noContent();
     }

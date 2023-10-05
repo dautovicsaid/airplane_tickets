@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreAirportRequest extends FormRequest
+class GetFilteredFlightRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +24,10 @@ class StoreAirportRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => ['required', 'string', 'max:255', 'unique:airports,name'],
-            'city_id' => ['required', 'exists:cities,id']
+            'department_airport' => 'required|exists:airports,id',
+            'arrival_airport' => 'required|exists:airports,id|different:department_airport',
+            'date_from' => 'required|date|after:today',
+            'date_to' => 'required|date|afterorequal:date_from'
         ];
     }
 }

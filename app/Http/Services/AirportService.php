@@ -1,33 +1,22 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Services;
 
-use App\Http\Resources\AirportResource;
-use App\Http\Services\AirportService;
-use App\Models\Airport;
 use App\Http\Requests\StoreAirportRequest;
 use App\Http\Requests\UpdateAirportRequest;
+use App\Http\Resources\AirportResource;
+use App\Http\Resources\CityResource;
+use App\Models\Airport;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
 
-class AirportController extends Controller
-{
-    protected AirportService $airportService;
-
-    /**
-     * @param AirportService $airportService
-     */
-    public function __construct(AirportService $airportService)
-    {
-        $this->airportService = $airportService;
-    }
+class AirportService {
 
     /**
      * @return AnonymousResourceCollection
      */
     public function index() : AnonymousResourceCollection
     {
-        return $this->airportService->index();
+        return AirportResource::collection(Airport::with('city')->get());
     }
 
     /**
@@ -36,7 +25,7 @@ class AirportController extends Controller
      */
     public function store(StoreAirportRequest $request) : AirportResource
     {
-        return $this->airportService->store($request);
+        return new AirportResource(Airport::create($request->validated()));
     }
 
     /**
@@ -45,7 +34,7 @@ class AirportController extends Controller
      */
     public function show(Airport $airport) : AirportResource
     {
-       return $this->airportService->show($airport);
+        return new AirportResource($airport);
     }
 
     /**
@@ -55,19 +44,15 @@ class AirportController extends Controller
      */
     public function update(UpdateAirportRequest $request, Airport $airport) : AirportResource
     {
-        return $this->airportService->update($request, $airport);
+        return new AirportResource($airport->update($request->validated()));
     }
 
     /**
      * @param Airport $airport
-     * @return Response
+     * @return void
      */
-    public function destroy(Airport $airport) : Response
+    public function destroy(Airport $airport) : void
     {
-        $this->authorize('delete', [Airport::class, $airport]);
-
-        $this->airportService->destroy($airport);
-
-        return response()->noContent();
+        $airport->delete();
     }
 }

@@ -2,70 +2,68 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAirplaneRequest;
+use App\Http\Requests\UpdateAirplaneRequest;
+use App\Http\Resources\AirplaneResource;
+use App\Http\Services\AirplaneService;
 use App\Models\Airplane;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class AirplaneController extends Controller
 {
-    public function index()
+
+    protected AirplaneService $airplaneService;
+
+    /**
+     * @param AirplaneService $airplaneService
+     */
+    public function __construct(AirplaneService $airplaneService)
     {
-        return Airplane::all();
+        $this->airplaneService = $airplaneService;
     }
 
-    public function store(Request $request)
+    /**
+     * @return AnonymousResourceCollection
+     */
+    public function index() : AnonymousResourceCollection
     {
-        $data = $request->only('name', 'economy_seats', 'business_seats', 'first_seats');
-        $validator = Validator::make($data, [
-            'name' => 'required|string',
-            'economy_seats' => 'required|integer',
-            'business_seats' => 'required|integer',
-            'first_seats' => 'required|integer',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->getMessageBag()], 200);
-        }
-
-        $airplane = Airplane::create($data);
-
-        return $airplane;
+        return $this->airplaneService->index();
     }
 
-    public function get($id)
+    /**
+     * @param StoreAirplaneRequest $request
+     * @return AirplaneResource
+     */
+    public function store(StoreAirplaneRequest $request) : AirplaneResource
     {
-        $airplane = Airplane::query()->find($id);
-
-        if (!$airplane) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Sorry, airplane not found.',
-            ], 403);
-        }
-
-        return $airplane;
+        return $this->airplaneService->store($request);
     }
 
-    public function update(Request $request, Airplane $airplane)
+    /**
+     * @param Airplane $airplane
+     * @return AirplaneResource
+     */
+    public function show(Airplane $airplane) : AirplaneResource
     {
-        $data = $request->only('name', 'economy_seats', 'business_seats', 'first_seats');
-        $validator = Validator::make($data, [
-            'name' => 'required|string',
-            'economy_seats' => 'required|integer',
-            'business_seats' => 'required|integer',
-            'first_seats' => 'required|integer',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->getMessageBag()], 200);
-        }
-
-        $airplane->update($data);
-
-        return $airplane;
+        return $this->airplaneService->show($airplane);
     }
 
-    public function destroy(Airplane $airplane)
+    /**
+     * @param UpdateAirplaneRequest $request
+     * @param Airplane $airplane
+     * @return AirplaneResource
+     */
+    public function update(UpdateAirplaneRequest $request, Airplane $airplane) : AirplaneResource
+    {
+        return $this->airplaneService->update($request, $airplane);
+    }
+
+    /**
+     * @param Airplane $airplane
+     * @return Response
+     */
+    public function destroy(Airplane $airplane) : Response
     {
         $airplane->delete();
 

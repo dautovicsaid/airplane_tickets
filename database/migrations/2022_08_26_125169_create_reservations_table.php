@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
-            $table->boolean("is_cancelled");
+            $table->boolean("is_cancelled")->default(false);
             $table->foreignId('flight_id')->constrained('flights');
             $table->foreignId('user_id')->constrained('users');
             $table->enum('class', ["business", "economy","first"]);

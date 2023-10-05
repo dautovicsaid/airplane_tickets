@@ -13,7 +13,7 @@ class StoreFlightRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,14 @@ class StoreFlightRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'department_airport' => 'required|exists:airports,id',
+            'arrival_airport' => 'required|exists:airports,id|different:department_airport',
+            'airplane_id' => 'required|exists:airplanes,id',
+            'date_from' => 'required|date|after:today',
+            'date_to' => 'required|date|after:date_from',
+            'check_in_time' => 'required|date|after:today',
+            'boarding_time' =>'required|date|after:check_in_time',
+            'price' => 'required|numeric|gt:0',
         ];
     }
 }

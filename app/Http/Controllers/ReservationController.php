@@ -2,72 +2,60 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Flight;
+use App\Http\Requests\StoreReservationRequest;
+use App\Http\Resources\ReservationResource;
+use App\Http\Services\ReservationService;
 use App\Models\Reservation;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use App\Enums\ServerStatus;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ReservationController extends Controller
 {
+    protected ReservationService $reservationService;
 
-    public function reservationHistory()
+    public function __construct(ReservationService $reservationService)
     {
-        return Reservation::with(['flight' => ['departmentAirport', 'arrivalAirport', 'airplane'],'user'])->get();
+        $this->reservationService = $reservationService;
+    }
+
+    /**
+     * @return AnonymousResourceCollection
+     */
+    public function reservationHistory(): AnonymousResourceCollection
+    {
+        return $this->reservationService->reservationHistory();
     }
 
 
-    public function userReservationHistory()
+    /**
+     * @return AnonymousResourceCollection
+     */
+    public function userReservationHistory() : AnonymousResourceCollection
     {
-        return Reservation::with(['flight' => ['departmentAirport', 'arrivalAirport', 'airplane']])->where('user_id',auth()->id())->get();
+        return $this->reservationService->userReservationHistory();
     }
 
 
-    public function store(Request $request)
+    /**
+     * @param StoreReservationRequest $request
+     * @return ReservationResource
+     */
+    public function store(StoreReservationRequest $request) : ReservationResource
     {
-        $data = $request->only('flight_id','user_id','class');
-        $validator = Validator::make($data, [
-            'flight_id' => 'required|exists:flights,id',
-            'class' => 'required|in:economy,business,first',
-        ]);
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->getMessageBag()], 200);
-        }
-        $data['price'] = Flight::find($data['flight_id'])->getClassPrice($data['class']);
-        $data['user_id']= auth()->id();
-        $data['is_cancelled'] = false;
-
-        $reservation = Reservation::create($data);
-
-        return $reservation;
+       return $this->reservationService->store($request);
     }
 
 
-    public function cancelReservation($id)
+    /**
+     * @param Reservation $reservation
+     * @return ReservationResource
+     * @throws AuthorizationException
+     */
+    public function cancelReservation(Reservation $reservation) : ReservationResource
     {
+        $this->authorize('cancel', $reservation);
 
-        $reservation = Reservation::find($id);
-
-        if(!$reservation) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Sorry, reservation not found.',
-            ], 403);
-        }
-
-        if ($reservation->user_id != auth()->id()) {
-            return response()->json(['error' => 'Forbidden'], 403);
-        }
-
-
-        if ($reservation->isCancelled()) {
-            return response()->json(['error' => 'Reservation is already cancelled'], 400);
-        }
-
-        $reservation->is_cancelled = true;
-        $reservation->save();
-
-        return $reservation;
+        return $this->reservationService->cancelReservation($reservation);
     }
 
 

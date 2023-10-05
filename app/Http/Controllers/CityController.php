@@ -2,84 +2,82 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCityRequest;
+use App\Http\Requests\UpdateCityRequest;
+use App\Http\Resources\CityResource;
+use App\Http\Services\CityService;
 use App\Models\City;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 
 class CityController extends Controller
 {
+    protected CityService $cityService;
 
-    public function index()
+    /**
+     * @param CityService $cityService
+     */
+    public function __construct(CityService $cityService)
     {
-        return City::with('country')->get();
+        $this->cityService = $cityService;
     }
 
-    public function store(Request $request)
+    /**
+     * @return AnonymousResourceCollection
+     */
+    public function index(): AnonymousResourceCollection
     {
-        $data = $request->only('name', 'country_id');
-        $validator = Validator::make($data, [
-            'name' => 'required|string',
-            'country_id' => 'required|exists:countries,id'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->getMessageBag()], 200);
-        }
-
-        $city = City::create($data);
-
-        return $city;
+        return $this->cityService->index();
     }
 
-    public function get($id)
+    /**
+     * @param StoreCityRequest $request
+     * @return CityResource
+     */
+    public function store(StoreCityRequest $request): CityResource
     {
-        $city = City::with('country')->get()->find($id);
-
-        if (!$city) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Sorry, city not found.',
-            ], 403);
-        }
-
-        return $city;
+        return $this->cityService->store($request);
     }
 
-    public function update(Request $request, City $city)
+    /**
+     * @param City $city
+     * @return CityResource
+     */
+    public function show(City $city): CityResource
     {
-        $data = $request->only('name', 'country_id');
-        $validator = Validator::make($data, [
-            'name' => 'required|string',
-            'country_id' => 'required|exists:countries,id'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->getMessageBag()], 200);
-        }
-
-        $city->update($data);
-
-        return $city;
+        return $this->cityService->show($city);
     }
 
-    public function destroy(City $city)
+    /**
+     * @param UpdateCityRequest $request
+     * @param City $city
+     * @return CityResource
+     */
+    public function update(UpdateCityRequest $request, City $city) : CityResource
     {
-        $city->delete();
+        return $this->cityService->update($request, $city);
+    }
+
+    /**
+     * @param City $city
+     * @return Response
+     */
+    public function destroy(City $city) : Response
+    {
+        $this->authorize('delete', [City::class, $city]);
+
+        $this->cityService->destroy($city);
 
         return response()->noContent();
     }
 
-    public function getAirportsByCity($id)
+    /**
+     * @param City $city
+     * @return AnonymousResourceCollection
+     */
+    public function getAirportsByCity(City $city) : AnonymousResourceCollection
     {
-        $city = City::query()->find($id);
-        if (!$city) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Sorry, city not found.',
-            ], 403);
-        }
-
-        return $city->airports;
+        return $this->cityService->getAirportsByCity($city);
     }
 }

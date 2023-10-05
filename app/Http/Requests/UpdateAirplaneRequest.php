@@ -13,7 +13,7 @@ class UpdateAirplaneRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,10 @@ class UpdateAirplaneRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'name' => 'required|string|min:3|unique:airplanes,name,' . $this->route('airplane')->id,
+            'economy_seats' => 'required|integer|gt:0',
+            'business_seats' => 'required|integer|gt:0',
+            'first_seats' => 'required|integer|gt:0',
         ];
     }
 }

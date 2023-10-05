@@ -2,83 +2,86 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCountryRequest;
+use App\Http\Requests\UpdateCountryRequest;
+use App\Http\Resources\CityResource;
+use App\Http\Resources\CountryResource;
+use App\Http\Services\CountryService;
 use App\Models\Country;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 
 class CountryController extends Controller
 {
+    use AuthorizesRequests;
 
-    public function index()
+    protected CountryService $countryService;
+
+    /**
+     * @param CountryService $countryService
+     */
+    public function __construct(CountryService $countryService)
     {
-        return Country::all();
+        $this->countryService = $countryService;
     }
 
-    public function store(Request $request)
+    /**
+     * @return AnonymousResourceCollection
+     */
+    public function index(): AnonymousResourceCollection
     {
-
-        $data = $request->only('name');
-        $validator = Validator::make($data, [
-            'name' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->getMessageBag()], 200);
-        }
-
-        $country = Country::create($data);
-
-        return $country;
+        return $this->countryService->index();
     }
 
-    public function get($id)
+    /**
+     * @param StoreCountryRequest $request
+     * @return CountryResource
+     */
+    public function store(StoreCountryRequest $request): CountryResource
     {
-
-        $country = Country::query()->find($id);
-        if(!$country) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Sorry, country not found.',
-            ], 403);
-        }
-
-        return $country;
+        return $this->countryService->store($request);
     }
 
-    public function update(Request $request, Country $country)
+    /**
+     * @param Country $country
+     * @return CountryResource
+     */
+    public function show(Country $country): CountryResource
     {
-        $data = $request->only('name');
-        $validator = Validator::make($data, [
-            'name' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->getMessageBag()], 200);
-        }
-
-        $country->update($data);
-
-        return $country;
+        return $this->countryService->show($country);
     }
 
-    public function destroy(Country $country)
+    /**
+     * @param UpdateCountryRequest $request
+     * @param Country $country
+     * @return CountryResource
+     */
+    public function update(UpdateCountryRequest $request, Country $country): CountryResource
     {
-        $country->delete();
+        return $this->countryService->update($request, $country);
+    }
+
+    /**
+     * @param Country $country
+     * @return Response
+     */
+    public function destroy(Country $country): Response
+    {
+        $this->authorize('delete', [Country::class, $country]);
+
+        $this->countryService->destroy($country);
 
         return response()->noContent();
     }
 
-    public function getCitiesByCountry($id) {
-
-        $country=Country::query()->find($id);
-        if(!$country) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Sorry, country not found.',
-            ], 403);
-        }
-
-        return $country->cities;
+    /**
+     * @param Country $country
+     * @return AnonymousResourceCollection
+     */
+    public function getCitiesByCountry(Country $country): AnonymousResourceCollection
+    {
+        return CityResource::collection($country->cities);
     }
 }

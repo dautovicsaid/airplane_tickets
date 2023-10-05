@@ -19,8 +19,4 @@ class Reservation extends Model
         return $this->belongsTo(Flight::class);
     }
 
-    public function isCancelled() {
-        return $this->is_cancelled != false;
-    }
-
 }

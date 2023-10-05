@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Flight;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreReservationRequest extends FormRequest
@@ -13,7 +14,7 @@ class StoreReservationRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +25,19 @@ class StoreReservationRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'flight_id' => 'required|exists:flights,id',
+            'class' => 'required|in:economy,business,first',
         ];
+    }
+
+    public function validated($key = null, $default = null)
+    {
+        $data = parent::validated($key, $default);
+
+        $data['price'] = Flight::find($this->flight_id)->getClassPrice($this->class);
+        $data['user_id'] = auth()->id();
+        $data["is_cancelled"] = false;
+
+        return $data;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateCityRequest extends FormRequest
 {
@@ -23,8 +24,16 @@ class UpdateCityRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            //
-        ];
+            return [
+                'name' => [
+                    'required', 'string', 'max:255',
+                    Rule::unique('cities')
+                        ->where(function ($query) {
+                            return $query->where('country_id', $this->country_id)
+                                ->where('name', $this->name)
+                                ->where('id', '!=', $this->route('city')->id);
+                        })],
+                'country_id' => ['required', 'exists:countries,id']
+            ];
     }
 }
