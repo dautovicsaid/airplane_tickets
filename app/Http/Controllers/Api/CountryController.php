@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\StoreCountryRequest;
 use App\Http\Requests\UpdateCountryRequest;
@@ -8,6 +8,7 @@ use App\Http\Resources\CityResource;
 use App\Http\Resources\CountryResource;
 use App\Http\Services\CountryService;
 use App\Models\Country;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
@@ -66,6 +67,7 @@ class CountryController extends Controller
     /**
      * @param Country $country
      * @return Response
+     * @throws AuthorizationException
      */
     public function destroy(Country $country): Response
     {

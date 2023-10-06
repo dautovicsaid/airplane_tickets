@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\AirplaneController;
-use App\Http\Controllers\AirportController;
-use App\Http\Controllers\CityController;
-use App\Http\Controllers\CountryController;
-use App\Http\Controllers\FlightController;
-use App\Http\Controllers\ReservationController;
-use App\Http\Controllers\UserAuthController;
+use App\Http\Controllers\Api\AirplaneController;
+use App\Http\Controllers\Api\AirportController;
+use App\Http\Controllers\Api\CityController;
+use App\Http\Controllers\Api\CountryController;
+use App\Http\Controllers\Api\FlightController;
+use App\Http\Controllers\Api\ReservationController;
+use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,13 +27,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::group(['middleware' => 'api'], function () {
 
-    Route::post('register', [UserAuthController::class, 'register']);
-    Route::post('login', [UserAuthController::class, 'login']);
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
 
 
     Route::group(['middleware' => 'jwt.verify'], function () {
-        Route::get('user', [UserAuthController::class, 'user']);
-        Route::post('logout', [UserAuthController::class, 'logout']);
+        Route::get('user', [AuthController::class, 'user']);
+        Route::post('logout', [AuthController::class, 'logout']);
 
         Route::group(['middleware' => 'admin.auth'], function () {
 

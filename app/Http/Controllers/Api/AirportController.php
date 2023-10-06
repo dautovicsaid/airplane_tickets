@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\StoreAirportRequest;
+use App\Http\Requests\UpdateAirportRequest;
 use App\Http\Resources\AirportResource;
 use App\Http\Services\AirportService;
 use App\Models\Airport;
-use App\Http\Requests\StoreAirportRequest;
-use App\Http\Requests\UpdateAirportRequest;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
@@ -61,6 +62,7 @@ class AirportController extends Controller
     /**
      * @param Airport $airport
      * @return Response
+     * @throws AuthorizationException
      */
     public function destroy(Airport $airport) : Response
     {

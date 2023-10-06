@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\StoreCityRequest;
 use App\Http\Requests\UpdateCityRequest;
 use App\Http\Resources\CityResource;
 use App\Http\Services\CityService;
 use App\Models\City;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
@@ -62,6 +63,7 @@ class CityController extends Controller
     /**
      * @param City $city
      * @return Response
+     * @throws AuthorizationException
      */
     public function destroy(City $city) : Response
     {
